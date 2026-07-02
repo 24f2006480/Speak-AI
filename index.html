@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redline — Speak it. See it corrected.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#1B1F2B;
+    --ink-navy-2:#242A3A;
+    --paper:#EDE6D6;
+    --paper-line:#D9CFB8;
+    --ink-dark:#23262F;
+    --redline:#B23A2E;
+    --greenline:#2F6F5E;
+    --brass:#A9823C;
+    --brass-light:#C9A45C;
+    --muted:#8A93A6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink-navy);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(169,130,60,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(47,111,94,0.08), transparent 40%);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding:48px 20px 80px;
+  }
+  .wrap{max-width:820px;margin:0 auto;}
+
+  /* Header */
+  header{margin-bottom:40px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--brass-light);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:22px;height:1px;
+    background:var(--brass-light);
+    display:inline-block;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(38px,6vw,58px);
+    line-height:1.02;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--brass-light);
+  }
+  .sub{
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.6;
+    max-width:520px;
+  }
+
+  /* Key panel */
+  .keybar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  .keybar input[type=password]{
+    flex:1;
+    min-width:220px;
+    background:var(--ink-navy-2);
+    border:1px solid #363D50;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:11px 14px;
+    border-radius:3px;
+    outline:none;
+  }
+  .keybar input[type=password]:focus{border-color:var(--brass);}
+  .keybar select{
+    background:var(--ink-navy-2);
+    border:1px solid #363D50;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:11px 10px;
+    border-radius:3px;
+    outline:none;
+  }
+  .keylink{
+    font-size:12px;
+    color:var(--muted);
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .keylink a{color:var(--brass-light);text-decoration:none;border-bottom:1px dotted var(--brass-light);}
+  .key-note{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:8px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* Controls */
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin:40px 0 26px;
+  }
+  .rec-btn{
+    width:76px;height:76px;
+    border-radius:50%;
+    border:2px solid var(--redline);
+    background:radial-gradient(circle at 35% 30%, #C6483B, #8E2A20);
+    box-shadow:0 0 0 6px rgba(178,58,46,0.12);
+    cursor:pointer;
+    position:relative;
+    flex-shrink:0;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .rec-btn:hover{transform:scale(1.04);}
+  .rec-btn:active{transform:scale(0.97);}
+  .rec-btn.recording{
+    animation:pulse 1.4s ease-in-out infinite;
+  }
+  .rec-btn .dot{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .rec-btn .square{
+    width:20px;height:20px;
+    background:var(--paper);
+    border-radius:4px;
+    display:none;
+  }
+  .rec-btn .circle{
+    width:22px;height:22px;
+    background:var(--paper);
+    border-radius:50%;
+  }
+  .rec-btn.recording .square{display:block;}
+  .rec-btn.recording .circle{display:none;}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 6px rgba(178,58,46,0.16);}
+    50%{box-shadow:0 0 0 14px rgba(178,58,46,0.05);}
+  }
+
+  .status-block{flex:1;}
+  .status-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--brass-light);
+    letter-spacing:0.04em;
+    margin-bottom:8px;
+  }
+  .waveform{
+    display:flex;
+    align-items:center;
+    gap:3px;
+    height:26px;
+  }
+  .waveform span{
+    display:block;
+    width:3px;
+    background:var(--muted);
+    border-radius:2px;
+    height:6px;
+    transition:height .12s ease, background .2s ease;
+  }
+  .waveform.active span{background:var(--redline);}
+
+  .check-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.04em;
+    background:var(--greenline);
+    color:var(--paper);
+    border:none;
+    padding:13px 22px;
+    border-radius:3px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .check-btn:hover{background:#3A8A76;}
+  .check-btn:active{transform:scale(0.98);}
+  .check-btn:disabled{background:#3A4150;color:var(--muted);cursor:not-allowed;}
+
+  /* Page / paper */
+  .page{
+    background:var(--paper);
+    color:var(--ink-dark);
+    border-radius:2px;
+    padding:38px 40px 34px;
+    position:relative;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+    background-image:repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 30px,
+      rgba(90,80,60,0.05) 31px
+    );
+  }
+  .page::before{
+    content:'';
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:56px;
+    border-right:1px solid rgba(178,58,46,0.25);
+  }
+  .page-inner{margin-left:40px;}
+  .page-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#8A7B5C;
+    margin-bottom:14px;
+  }
+  .transcript{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:17px;
+    line-height:1.85;
+    min-height:90px;
+    outline:none;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+  }
+  .transcript[data-placeholder]:empty::before{
+    content:attr(data-placeholder);
+    color:#A79A7C;
+  }
+  .transcript .interim{color:#A79A7C; font-style:italic;}
+
+  .mark-wrong{
+    color:var(--redline);
+    text-decoration:line-through;
+    text-decoration-thickness:1.5px;
+    text-decoration-color:rgba(178,58,46,0.7);
+    cursor:help;
+  }
+  .mark-right{
+    color:var(--greenline);
+    font-weight:600;
+    border-bottom:1.5px solid rgba(47,111,94,0.5);
+    cursor:help;
+    padding:0 1px;
+  }
+
+  .divider{
+    height:1px;
+    background:var(--paper-line);
+    margin:26px 0 18px;
+  }
+
+  .result-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:12px;
+  }
+  .result-title{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:19px;
+    color:var(--ink-dark);
+  }
+  .result-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:#8A7B5C;
+  }
+  .clean-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color:var(--greenline);
+  }
+
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:18px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .ghost-btn{
+    background:none;
+    border:1px solid var(--paper-line);
+    color:#6B6350;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:8px 14px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .ghost-btn:hover{border-color:var(--redline); color:var(--redline);}
+
+  .error-banner{
+    margin-top:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:#E5A19A;
+    background:rgba(178,58,46,0.12);
+    border:1px solid rgba(178,58,46,0.35);
+    padding:12px 14px;
+    border-radius:3px;
+    display:none;
+  }
+
+  footer{
+    margin-top:36px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+  }
+
+  @media (max-width:560px){
+    .page{padding:28px 20px 24px;}
+    .page-inner{margin-left:0;}
+    .page::before{display:none;}
+    .controls{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Voice to page, edited in red</div>
+    <h1>Redline<br><em>speak it. see it corrected.</em></h1>
+    <p class="sub">Dictate a passage, then send it to a Groq-hosted model for a proofreader's pass. Errors are struck through in red; corrections are inked in green, right beside them.</p>
+
+    <div class="keybar">
+      <input type="password" id="apiKey" placeholder="Paste your Groq API key (gsk_...)" autocomplete="off" spellcheck="false">
+      <select id="modelSelect">
+        <option value="openai/gpt-oss-120b" selected>openai/gpt-oss-120b</option>
+        <option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>
+        <option value="qwen/qwen3.6-27b">qwen/qwen3.6-27b</option>
+      </select>
+    </div>
+    <div class="key-note">Your key stays in this browser tab only — never stored, never sent anywhere but api.groq.com. Get a free key at <span class="keylink"><a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a></span>.</div>
+  </header>
+
+  <div class="controls">
+    <button class="rec-btn" id="recBtn" title="Start dictating">
+      <div class="dot"><div class="circle"></div><div class="square"></div></div>
+    </button>
+    <div class="status-block">
+      <div class="status-label" id="statusLabel">Press to dictate</div>
+      <div class="waveform" id="waveform"></div>
+    </div>
+    <button class="check-btn" id="checkBtn" disabled>Mark it up →</button>
+  </div>
+
+  <div class="page">
+    <div class="page-inner">
+      <div class="page-label">Manuscript</div>
+      <div class="transcript" id="transcript" contenteditable="true" data-placeholder="Your spoken words will appear here — or just type them in."></div>
+
+      <div id="resultBlock" style="display:none;">
+        <div class="divider"></div>
+        <div class="result-header">
+          <div class="result-title">Editor's marks</div>
+          <div class="result-count" id="resultCount"></div>
+        </div>
+        <div class="transcript" id="markupOutput"></div>
+      </div>
+
+      <div class="error-banner" id="errorBanner"></div>
+
+      <div class="toolbar">
+        <div class="hint">Hover a red/green pair for the reason</div>
+        <button class="ghost-btn" id="clearBtn">Clear page</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Speech capture runs locally in your browser (Web Speech API, Chrome recommended). Grammar checks call the Groq Chat Completions API directly from this page.</footer>
+</div>
+
+<script>
+  // ---------- Waveform ----------
+  const waveform = document.getElementById('waveform');
+  const BAR_COUNT = 28;
+  for (let i=0;i<BAR_COUNT;i++){
+    const s = document.createElement('span');
+    waveform.appendChild(s);
+  }
+  const bars = waveform.querySelectorAll('span');
+  let waveInterval = null;
+  function startWave(){
+    waveform.classList.add('active');
+    waveInterval = setInterval(()=>{
+      bars.forEach(b=>{
+        const h = 6 + Math.random()*20;
+        b.style.height = h+'px';
+      });
+    }, 120);
+  }
+  function stopWave(){
+    clearInterval(waveInterval);
+    waveform.classList.remove('active');
+    bars.forEach(b=>b.style.height='6px');
+  }
+
+  // ---------- Speech recognition ----------
+  const transcriptEl = document.getElementById('transcript');
+  const recBtn = document.getElementById('recBtn');
+  const statusLabel = document.getElementById('statusLabel');
+  const checkBtn = document.getElementById('checkBtn');
+  const errorBanner = document.getElementById('errorBanner');
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let recognizing = false;
+  let finalText = '';
+
+  function refreshTranscriptDisplay(interim){
+    transcriptEl.innerHTML = escapeHtml(finalText) +
+      (interim ? '<span class="interim">'+escapeHtml(interim)+'</span>' : '');
+    placeCaretAtEnd(transcriptEl);
+    checkBtn.disabled = finalText.trim().length === 0;
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.innerText = s;
+    return d.innerHTML;
+  }
+
+  function placeCaretAtEnd(el){
+    // no-op while recognizing to avoid caret fighting; kept simple
+  }
+
+  if (SpeechRecognition){
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (e)=>{
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++){
+        const chunk = e.results[i][0].transcript;
+        if (e.results[i].isFinal){
+          finalText += chunk + ' ';
+        } else {
+          interim += chunk;
+        }
+      }
+      refreshTranscriptDisplay(interim);
+    };
+
+    recognition.onerror = (e)=>{
+      showError('Mic error: ' + e.error + '. You can also just type directly into the page.');
+      stopRecording();
+    };
+
+    recognition.onend = ()=>{
+      if (recognizing){
+        // Chrome sometimes ends sessions on silence; restart if user hasn't stopped it
+        try { recognition.start(); } catch(err){ stopRecording(); }
+      }
+    };
+  }
+
+  recBtn.addEventListener('click', ()=>{
+    if (!SpeechRecognition){
+      showError('This browser doesn\'t support live speech capture. Try Chrome, or just type your text below and press "Mark it up".');
+      return;
+    }
+    if (!recognizing){
+      startRecording();
+    } else {
+      stopRecording();
+    }
+  });
+
+  function startRecording(){
+    finalText = transcriptEl.innerText.trim();
+    finalText = finalText ? finalText + ' ' : '';
+    recognizing = true;
+    recBtn.classList.add('recording');
+    recBtn.title = 'Stop dictating';
+    statusLabel.textContent = 'Listening…';
+    startWave();
+    hideError();
+    try { recognition.start(); } catch(err){ /* already started */ }
+  }
+
+  function stopRecording(){
+    recognizing = false;
+    recBtn.classList.remove('recording');
+    recBtn.title = 'Start dictating';
+    statusLabel.textContent = finalText.trim() ? 'Captured. Ready to mark up.' : 'Press to dictate';
+    stopWave();
+    try { recognition.stop(); } catch(err){}
+  }
+
+  // allow manual typing too
+  transcriptEl.addEventListener('input', ()=>{
+    finalText = transcriptEl.innerText;
+    checkBtn.disabled = transcriptEl.innerText.trim().length === 0;
+  });
+
+  // ---------- Groq grammar check ----------
+  const resultBlock = document.getElementById('resultBlock');
+  const markupOutput = document.getElementById('markupOutput');
+  const resultCount = document.getElementById('resultCount');
+  const clearBtn = document.getElementById('clearBtn');
+  const apiKeyInput = document.getElementById('apiKey');
+  const modelSelect = document.getElementById('modelSelect');
+
+  function showError(msg){
+    errorBanner.textContent = msg;
+    errorBanner.style.display = 'block';
+  }
+  function hideError(){
+    errorBanner.style.display = 'none';
+  }
+
+  checkBtn.addEventListener('click', async ()=>{
+    const text = transcriptEl.innerText.trim();
+    const key = apiKeyInput.value.trim();
+    hideError();
+
+    if (!text){ return; }
+    if (!key){
+      showError('Paste a Groq API key above first — get one free at console.groq.com/keys.');
+      return;
+    }
+
+    checkBtn.disabled = true;
+    checkBtn.textContent = 'Reading it over…';
+    resultBlock.style.display = 'none';
+
+    try {
+      const markup = await fetchCorrections(text, key, modelSelect.value);
+      renderMarkup(markup, text);
+    } catch (err){
+      showError('Could not reach Groq: ' + err.message);
+    } finally {
+      checkBtn.disabled = false;
+      checkBtn.textContent = 'Mark it up →';
+    }
+  });
+
+  async function fetchCorrections(text, key, model){
+    const systemPrompt = `You are a meticulous copy editor marking up a manuscript in red pen.
+You will receive a passage of text, possibly transcribed from speech (so it may lack punctuation or have run-on phrasing).
+Reproduce the text VERBATIM except at each grammar, spelling, punctuation, word-choice, or agreement error.
+At each error location, replace ONLY the erroneous span with this exact token format:
+[[wrong=<the exact original erroneous text>||right=<the corrected text>||why=<a very short reason, 3-6 words>]]
+Rules:
+- Do not paraphrase or rewrite correct portions of the text.
+- Do not add commentary before or after the text.
+- If the text has no errors at all, return it completely unchanged with no tokens.
+- Keep the reason very short, like a margin note: e.g. "subject-verb agreement", "wrong tense", "missing comma", "run-on sentence".
+- Output ONLY the reconstructed text with tokens inline. No preamble, no markdown, no explanation outside the tokens.`;
+
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + key
+      },
+      body: JSON.stringify({
+        model: model,
+        temperature: 0.1,
+        max_tokens: 2000,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text }
+        ]
+      })
+    });
+
+    if (!resp.ok){
+      let detail = '';
+      try { const j = await resp.json(); detail = j.error?.message || JSON.stringify(j); } catch(e){}
+      throw new Error(resp.status + ' ' + (detail || resp.statusText));
+    }
+
+    const data = await resp.json();
+    const out = data.choices?.[0]?.message?.content;
+    if (!out) throw new Error('empty response from model');
+    return out;
+  }
+
+  function renderMarkup(markup, originalText){
+    const tokenRe = /\[\[wrong=([\s\S]*?)\|\|right=([\s\S]*?)\|\|why=([\s\S]*?)\]\]/g;
+    let count = 0;
+    let html = '';
+    let lastIndex = 0;
+    let m;
+    while ((m = tokenRe.exec(markup)) !== null){
+      html += escapeHtml(markup.slice(lastIndex, m.index));
+      const wrong = m[1], right = m[2], why = m[3];
+      html += '<span class="mark-wrong" title="'+escapeHtml(why)+'">'+escapeHtml(wrong)+'</span>' +
+              '<span class="mark-right" title="'+escapeHtml(why)+'"> '+escapeHtml(right)+'</span>';
+      count++;
+      lastIndex = tokenRe.lastIndex;
+    }
+    html += escapeHtml(markup.slice(lastIndex));
+
+    resultBlock.style.display = 'block';
+    if (count === 0){
+      markupOutput.innerHTML = '<span class="clean-note">Clean copy — no corrections needed.</span>';
+      resultCount.textContent = '';
+    } else {
+      markupOutput.innerHTML = html;
+      resultCount.textContent = count + (count === 1 ? ' correction' : ' corrections');
+    }
+  }
+
+  clearBtn.addEventListener('click', ()=>{
+    finalText = '';
+    transcriptEl.innerHTML = '';
+    resultBlock.style.display = 'none';
+    checkBtn.disabled = true;
+    hideError();
+    statusLabel.textContent = 'Press to dictate';
+  });
+
+  // Warn upfront if speech API unsupported
+  if (!SpeechRecognition){
+    statusLabel.textContent = 'Live dictation unsupported here — type instead';
+  }
+</script>
+</body>
+</html>
